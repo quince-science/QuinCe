@@ -31,15 +31,18 @@ public class ArgoDataFile extends DataFile {
    * Constructor for a new file that is not yet in the database.
    *
    * @param instrument
+   *          The {@link Instrument} that this file belongs to.
    * @param fileDefinition
+   *          The file format definition for the file.
    * @param filename
+   *          The file name.
    * @param contents
+   *          The file contents.
    * @throws MissingParamException
-   * @throws DataFileException
+   *           If any parameters are missing.
    */
   public ArgoDataFile(Instrument instrument, FileDefinition fileDefinition,
-    String filename, FileContents contents)
-    throws MissingParamException, DataFileException {
+    String filename, FileContents contents) throws MissingParamException {
 
     super(instrument, fileDefinition, filename, contents);
   }
@@ -48,11 +51,21 @@ public class ArgoDataFile extends DataFile {
    * Constructor from a file retrieved from the database.
    *
    * @param id
+   *          The file's database ID.
    * @param instrument
+   *          The {@link Instrument} that this file belongs to.
    * @param fileDefinition
+   *          The file format definition for the file.
    * @param filename
+   *          The file name.
+   * @param startCycle
+   *          The first cycle number in the file.
+   * @param endCycle
+   *          The last cycle number in the file.
    * @param recordCount
+   *          The number of records in the file.
    * @param properties
+   *          The file's properties.
    */
   public ArgoDataFile(long id, Instrument instrument,
     FileDefinition fileDefinition, String filename, String startCycle,
@@ -130,6 +143,7 @@ public class ArgoDataFile extends DataFile {
    * </p>
    *
    * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   private void extractCycleRange() throws DataFileException {
 
@@ -177,6 +191,18 @@ public class ArgoDataFile extends DataFile {
     }
   }
 
+  /**
+   * Filter the supplied list of files to those whose contents are encompassed
+   * by the specified start and end cycles.
+   *
+   * @param allFiles
+   *          The files to be filtered.
+   * @param start
+   *          The start cycle.
+   * @param end
+   *          The end cycle.
+   * @return The matching files.
+   */
   public static List<ArgoDataFile> filter(List<ArgoDataFile> allFiles,
     int start, int end) {
 

@@ -771,8 +771,12 @@ public class Instrument {
    *
    * @param variable
    *          The {@link Variable} whose Run Type values are required.
+   * @param includeAlias
+   *          Indicates whether or not aliases should be included in the result.
    * @return The Run Type values, grouped by category.
    * @throws MissingRunTypeException
+   *           If the Run Type configuration for the Instrument is inconsistent.
+   *           This should never be thrown.
    * @see RunTypeCategory
    */
   public Map<Long, List<String>> getVariableRunTypes(Variable variable,
@@ -870,8 +874,12 @@ public class Instrument {
    * Get the Run Type values associated with measurements for any
    * {@link Variable} measured by the instrument.
    *
+   * @param includeAlias
+   *          Indicates whether or not aliases should be included in the result.
    * @return The Run Types associated with measurements.
    * @throws MissingRunTypeException
+   *           If the Run Type configuration for the Instrument is inconsistent.
+   *           This should never be thrown.
    */
   public List<String> getMeasurementRunTypes(boolean includeAlias)
     throws MissingRunTypeException {
@@ -892,6 +900,8 @@ public class Instrument {
   /**
    * Get the Run Type values associated with internal calibrations.
    *
+   * @param includeAlias
+   *          Indicates whether or not aliases should be included in the result.
    * @return The Run Types associated with internal calibrations.
    */
   public List<String> getInternalCalibrationRunTypes(boolean includeAlias) {

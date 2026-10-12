@@ -32,47 +32,49 @@ import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 public abstract class DataFile implements Comparable<DataFile> {
 
   /**
-   * The database ID of this file
+   * The database ID of this file.
    */
   private long databaseId = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
-   * The file format definition
+   * The file format definition.
    */
   protected FileDefinition fileDefinition;
 
   /**
-   * The file name
+   * The file name.
    */
   private String filename;
 
   /**
-   * The number of records in the file
+   * The number of records in the file.
    */
   private int recordCount = -1;
 
   /**
-   * The file contents
+   * The file contents.
    */
   private FileContents contents;
 
   /**
-   * Messages generated regarding the file
+   * Messages generated regarding the file.
    */
   private TreeSet<DataFileMessage> messages;
 
   /**
-   * Misc properties
+   * Miscellaneous properties.
    */
   protected Properties properties;
 
   /**
-   * Max number of messages. Additional messages will be discarded.
+   * Maximum number of messages that can be generated for a file. Additional
+   * messages will be discarded.
    */
   private static final int MAX_MESSAGE_COUNT = 25;
 
   /**
-   * Row in the file where the error happened not set
+   * Indicates that a generated message did not occur in relation to a specific
+   * line number.
    */
   private static final int ROW_NOT_SET = -1;
 
@@ -94,21 +96,24 @@ public abstract class DataFile implements Comparable<DataFile> {
   /**
    * Create a DataFile with the specified definition and contents
    *
-   * @param fileStore
-   *          The location of the file store
+   * @param instrument
+   *          The {@link Instrument} that the file belongs to.
    * @param fileDefinition
-   *          The file format definition
+   *          The file format definition.
    * @param filename
-   *          The file name
+   *          The file name.
+   * @param contents
+   *          The file's contents.
    * @throws MissingParamException
-   *           If any fields are null
+   *           If any parameters are missing.
    */
   public DataFile(Instrument instrument, FileDefinition fileDefinition,
-    String filename, FileContents contents)
-    throws MissingParamException, DataFileException {
+    String filename, FileContents contents) throws MissingParamException {
 
+    MissingParam.checkMissing(instrument, "instrument");
     MissingParam.checkMissing(fileDefinition, "fileDefinition");
-    MissingParam.checkMissing(filename, "fileName");
+    MissingParam.checkMissing(filename, "filename");
+    MissingParam.checkMissing(contents, "contents");
 
     this.instrument = instrument;
     this.fileDefinition = fileDefinition;
@@ -123,20 +128,18 @@ public abstract class DataFile implements Comparable<DataFile> {
    * Constructor for the basic details of a file. The contents will be loaded on
    * demand if required.
    *
-   * @param fileStore
-   *          The file store location
    * @param id
-   *          The file's database ID
+   *          The file's database ID.
+   * @param instrument
+   *          The {@link Instrument} that the file belongs to.
    * @param fileDefinition
    *          The file definition for the file
    * @param filename
    *          The filename
-   * @param startDate
-   *          The date/time of the first record in the file
-   * @param endDate
-   *          The date/time of the last record in the file
    * @param recordCount
    *          The number of records in the file
+   * @param properties
+   *          The file's properties.
    */
   public DataFile(long id, Instrument instrument, FileDefinition fileDefinition,
     String filename, int recordCount, Properties properties) {
@@ -206,10 +209,11 @@ public abstract class DataFile implements Comparable<DataFile> {
   }
 
   /**
-   * Get the number of rows in the file
+   * Get the total number of rows in the file, including headers.
    *
-   * @return The row count
+   * @return The row count.
    * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   public int getContentLineCount() throws DataFileException {
     return getContents().size();
@@ -218,7 +222,14 @@ public abstract class DataFile implements Comparable<DataFile> {
   /**
    * Get the number of records in the file.
    *
-   * @return The record count
+   * <p>
+   * This differs from {@link #getContentLineCount()} in that it excludes any
+   * headers and just counts data lines.
+   * </p>
+   *
+   * @return The record count.
+   * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   public int getRecordCount() throws DataFileException {
     if (-1 == recordCount) {
@@ -298,9 +309,9 @@ public abstract class DataFile implements Comparable<DataFile> {
    * messages..." is added, then no more messages are allowed.
    *
    * @param lineNumber
-   *          The line number. Line number < 0 means no line number.
+   *          The line number. Line number &lt;0 means no line number.
    * @param message
-   *          The message text
+   *          The message text.
    */
   protected void addMessage(int lineNumber, String message) {
     if (messages.size() == MAX_MESSAGE_COUNT - 1) {
@@ -543,18 +554,34 @@ public abstract class DataFile implements Comparable<DataFile> {
 
   /**
    * Get a field value from a line. If the line does not have enough fields, or
-   * the field is the defined missing value, returns {@code null}
+   * the field is the defined missing value, returns {@code null}.
    *
+   * <p>
    * Any commas in a data value are assumed to be thousands separators and
    * removed from the string. QuinCe does not support commas as decimal points.
+   * </p>
    *
+   * <p>
+   * Any errors encountered while retrieving the value will be added to the
+   * supplied {@link DataSet}'s processing messages.
+   * </p>
+   *
+   * @param jobName
+   *          The name of the processing job that is requesting the value. Will
+   *          be added to any generated messages if the value cannot be
+   *          retrieved.
+   * @param dataSet
+   *          The destination {@link DataSet} for the requested value.
+   * @param lineNumber
+   *          The line number of the file.
    * @param line
-   *          The line containing the value
+   *          The line contents.
    * @param field
-   *          The field to retrieve
+   *          The field to retrieve.
    * @param missingValue
-   *          The defined missing value
-   * @return The extracted value
+   *          A string to be interpreted as a missing value. {@code NaN},
+   *          {@code NA} or an empty String are automatically detected.
+   * @return The extracted value.
    */
   public String getStringValue(String jobName, DataSet dataSet, int lineNumber,
     List<String> line, int field, String missingValue) {
@@ -586,12 +613,13 @@ public abstract class DataFile implements Comparable<DataFile> {
   }
 
   /**
-   * Get a line from the file as a list of field values
+   * Get a line from the file as a list of field values.
    *
    * @param line
-   *          The line number
-   * @return The line fields
+   *          The line number.
+   * @return The line fields.
    * @throws DataFileException
+   *           If the file contents cannot be extracted.
    */
   public List<String> getLine(int line) throws DataFileException {
     return fileDefinition.extractFields(getContents().get(line));
@@ -653,6 +681,8 @@ public abstract class DataFile implements Comparable<DataFile> {
    * @see #getStartDisplayString()
    *
    * @return The start point.
+   * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   public abstract String getStartString() throws DataFileException;
 
@@ -664,6 +694,8 @@ public abstract class DataFile implements Comparable<DataFile> {
    * </p>
    *
    * @return The start point.
+   * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   public String getStartDisplayString() throws DataFileException {
     return getStartString();
@@ -680,6 +712,8 @@ public abstract class DataFile implements Comparable<DataFile> {
    * @see #getEndDisplayString()
    *
    * @return The end point.
+   * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   public abstract String getEndString() throws DataFileException;
 
@@ -691,6 +725,8 @@ public abstract class DataFile implements Comparable<DataFile> {
    * </p>
    *
    * @return The end point.
+   * @throws DataFileException
+   *           If the file's contents cannot be extracted.
    */
   public String getEndDisplayString() throws DataFileException {
     return getEndString();
@@ -699,6 +735,8 @@ public abstract class DataFile implements Comparable<DataFile> {
   /**
    * Get a list of existing files that overlap with this file.
    *
+   * @param allFiles
+   *          The set of files to be checked for overlaps.
    * @return The overlapping files.
    */
   public abstract TreeSet<DataFile> getOverlappingFiles(
@@ -707,12 +745,17 @@ public abstract class DataFile implements Comparable<DataFile> {
   /**
    * Get any extra properties that should be included in the export manifest.
    *
-   * @return
+   * @return The file's properties.
    */
   public Properties getExportProperties() {
     return new Properties();
   }
 
+  /**
+   * Get the {@link Instrument} that this file belongs to.
+   *
+   * @return The Instrument.
+   */
   protected Instrument getInstrument() {
     return instrument;
   }
@@ -733,8 +776,9 @@ public abstract class DataFile implements Comparable<DataFile> {
    * <p>
    * The value returned by this method will be included in messages of the form
    * {@code The file has &lt;item&gt; issues}.
+   * </p>
    *
-   * @return
+   * @return The item that caused the issue.
    */
   public abstract String getFundamentalProcessingIssueItem();
 }

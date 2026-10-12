@@ -29,14 +29,32 @@ import uk.ac.exeter.QuinCe.utils.NaturalOrderComparator;
 import uk.ac.exeter.QuinCe.web.system.ResourceManager;
 
 /**
- * Object to represent a data set
+ * Object to represent a data set.
  */
 public class DataSet implements Comparable<DataSet> {
 
+  /**
+   * Lookup table for instrument measurement basis codes to their respective
+   * {@code DataSet} classes.
+   *
+   * @see Instrument#getBasis()
+   * @see #getDataSetConstructor(int)
+   */
   private static Map<Integer, Class<? extends DataSet>> BASIS_TO_CLASS;
 
+  /**
+   * Identifier for the special field set containing time and position
+   * information.
+   *
+   * @see #getFieldSets(boolean)
+   */
   public static final long TIMEPOS_FIELDSET_ID = 0L;
 
+  /**
+   * Name for the special field set containing time and position information.
+   *
+   * @see #getFieldSets(boolean)
+   */
   public static final String TIMEPOS_FIELDSET_NAME = "Time/Position";
 
   /**
@@ -55,10 +73,24 @@ public class DataSet implements Comparable<DataSet> {
    */
   public static final String DATASET_PROPERTIES_KEY = "_DATASET";
 
+  /**
+   * Special key for the property specifying the QuinCe version used to process
+   * the dataset.
+   *
+   * @see #getProperty(String, String)
+   */
   private static final String PROCESSING_VERSION_PROPERTY = "ProcessingVersion";
 
+  /**
+   * The numeric value for the status indicating that the dataset has been
+   * flagged to be reprocessed.
+   */
   public static final int STATUS_REPROCESS = -4;
 
+  /**
+   * The string value for the status indicating that the dataset has been
+   * flagged to be reprocessed.
+   */
   public static final String STATUS_REPROCESS_NAME = "Marked for reprocessing";
 
   /**
@@ -67,7 +99,7 @@ public class DataSet implements Comparable<DataSet> {
   public static final int STATUS_DELETING = -3;
 
   /**
-   * The string for the delete status
+   * The string for the delete status.
    */
   public static final String STATUS_DELETING_NAME = "Deleting";
 
@@ -77,7 +109,7 @@ public class DataSet implements Comparable<DataSet> {
   public static final int STATUS_DELETE = -2;
 
   /**
-   * The string for the delete status
+   * The string for the delete status.
    */
   public static final String STATUS_DELETE_NAME = "Marked for delete";
 
@@ -88,67 +120,67 @@ public class DataSet implements Comparable<DataSet> {
   public static final int STATUS_ERROR = -1;
 
   /**
-   * The string for the error status
+   * The string for the error status.
    */
   public static final String STATUS_ERROR_NAME = "ERROR";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the queued status.
    */
   public static final int STATUS_WAITING = 0;
 
   /**
-   * The string for the data extraction status
+   * The string for the queued status.
    */
   public static final String STATUS_WAITING_NAME = "Waiting";
 
   /**
-   * The numeric value for the data extraction status
+   * The numeric value for the data extraction status.
    */
   public static final int STATUS_DATA_EXTRACTION = 10;
 
   /**
-   * The string for the data extraction status
+   * The string for the data extraction status.
    */
   public static final String STATUS_DATA_EXTRACTION_NAME = "Data Extraction";
 
   /**
-   * The numeric value for the automatic QC status
+   * The numeric value for the automatic QC status.
    */
   public static final int STATUS_SENSOR_QC = 20;
 
   /**
-   * The string for the automatic QC status
+   * The string for the automatic QC status.
    */
   public static final String STATUS_SENSOR_QC_NAME = "Sensor QC";
 
   /**
-   * The numeric value for the data reduction status
+   * The numeric value for the data reduction status.
    */
   public static final int STATUS_DATA_REDUCTION = 30;
 
   /**
-   * The string for the data extraction status
+   * The string for the data extraction status.
    */
   public static final String STATUS_DATA_REDUCTION_NAME = "Data Reduction";
 
   /**
-   * The numeric value for the data reduction QC status
+   * The numeric value for the data reduction QC status.
    */
   public static final int STATUS_DATA_REDUCTION_QC = 40;
 
   /**
-   * The string for the export complete status
+   * The string for the export complete status.
    */
   public static final String STATUS_DATA_REDUCTION_QC_NAME = "Data Reduction QC";
 
   /**
-   * The numeric value for the user QC status
+   * The numeric value for the user QC status.
    */
   public static final int STATUS_USER_QC = 50;
 
   /**
-   * The string for the user QC status
+   * The string for the user QC status.
    */
   public static final String STATUS_USER_QC_NAME = "Ready for Manual QC";
 
@@ -163,69 +195,69 @@ public class DataSet implements Comparable<DataSet> {
   public static final String STATUS_CALIBRATION_REQUIRED_NAME = "Calibration info required";
 
   /**
-   * The numeric value for the ready for submission status
+   * The numeric value for the ready for submission status.
    */
   public static final int STATUS_READY_FOR_SUBMISSION = 100;
 
   /**
-   * The string for the ready for submission status
+   * The string for the ready for submission status.
    */
   public static final String STATUS_READY_FOR_SUBMISSION_NAME = "Ready for Submission";
 
   /**
-   * The numeric value for the waiting for approval status
+   * The numeric value for the waiting for approval status.
    */
   public static final int STATUS_WAITING_FOR_APPROVAL = 110;
 
   /**
-   * The string for the waiting for approval status
+   * The string for the waiting for approval status.
    */
   public static final String STATUS_WAITING_FOR_APPROVAL_NAME = "Waiting for Approval";
 
   /**
-   * The numeric value for the ready for export status
+   * The numeric value for the ready for export status.
    */
   public static final int STATUS_READY_FOR_EXPORT = 120;
 
   /**
-   * The string for the ready for export status
+   * The string for the ready for export status.
    */
   public static final String STATUS_READY_FOR_EXPORT_NAME = "Waiting for Automatic Export";
 
   /**
-   * The numeric value for the exporting status
+   * The numeric value for the exporting status.
    */
   public static final int STATUS_EXPORTING = 130;
 
   /**
-   * The string for the exporting status
+   * The string for the exporting status.
    */
   public static final String STATUS_EXPORTING_NAME = "Automatic Export In Progress";
 
   /**
-   * The numeric value for the export complete status
+   * The numeric value for the export complete status.
    */
   public static final int STATUS_EXPORT_COMPLETE = 140;
 
   /**
-   * The string for the export complete status
+   * The string for the export complete status.
    */
   public static final String STATUS_EXPORT_COMPLETE_NAME = "Automatic Export Complete";
 
   private static Map<Integer, String> validStatuses;
 
   /**
-   * The database ID
+   * The data set's database ID.
    */
   private long id = DatabaseUtils.NO_DATABASE_RECORD;
 
   /**
-   * The database ID of the instrument to which this data set belongs
+   * The database ID of the instrument to which this data set belongs.
    */
   private Instrument instrument;
 
   /**
-   * The data set name
+   * The data set name.
    */
   private String name;
 
@@ -240,37 +272,37 @@ public class DataSet implements Comparable<DataSet> {
   private String end;
 
   /**
-   * Properties for each of the measured variables
+   * Properties for each of the measured variables.
    */
   private Map<String, Properties> properties;
 
   /**
-   * The time that this Dataset was created in the database
+   * The time that this Dataset was created in the database.
    */
   private LocalDateTime createdDate;
 
   /**
-   * The time when the data file was last touched
+   * The time when the data file was last touched.
    */
   private LocalDateTime lastTouched;
 
   /**
-   * The data set's status
+   * The data set's status.
    */
   private int status = STATUS_WAITING;
 
   /**
-   * The date that the status was set
+   * The date that the status was set.
    */
   private LocalDateTime statusDate = null;
 
   /**
-   * Indicates whether or not this is a NRT dataset
+   * Indicates whether or not this is a NRT dataset.
    */
   private boolean nrt = false;
 
   /**
-   * Errors from jobs handling this data set
+   * Errors from jobs handling this data set.
    */
   private ArrayList<Message> errorMessages = new ArrayList<Message>();
 
@@ -285,27 +317,27 @@ public class DataSet implements Comparable<DataSet> {
   private DatasetUserMessages userMessages;
 
   /**
-   * The available field sets for this dataset
+   * The available field sets for this dataset.
    */
   private LinkedHashMap<String, Long> fieldSetsByName = null;
 
   /**
-   * The minimum longitude
+   * The minimum longitude.
    */
   private double minLon = 0.0;
 
   /**
-   * The maximum longitude
+   * The maximum longitude.
    */
   private double maxLon = 0.0;
 
   /**
-   * The minimum latitude
+   * The minimum latitude.
    */
   private double minLat = 0.0;
 
   /**
-   * The maximum latitiude
+   * The maximum latitude.
    */
   private double maxLat = 0.0;
 
@@ -354,41 +386,48 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   /**
-   * Constructor for all fields
+   * Constructor for all fields.
    *
    * @param id
-   *          Data set's database ID
-   * @param instrumentId
-   *          Database ID of the instrument to which the data set belongs
+   *          Data set's database ID.
+   * @param instrument
+   *          The Instrument to which the data set belongs.
    * @param name
-   *          Dataset name
-   * @param startDate
-   *          Start coordinate
+   *          Dataset name.
+   * @param start
+   *          Start coordinate.
    * @param end
-   *          End coordinate
+   *          End coordinate.
    * @param status
-   *          The current status
+   *          The current status.
    * @param statusDate
-   *          The date that the status was set
+   *          The date that the status was set.
    * @param nrt
-   *          Indicates whether or not this is a NRT dataset
+   *          Indicates whether or not this is a NRT dataset.
    * @param properties
-   *          Additional properties
+   *          Additional properties.
+   * @param sensorOffsets
+   *          The sensor offsets for the dataset.
    * @param createdDate
-   *          Date that the dataset was created
+   *          Date that the dataset was created.
    * @param lastTouched
-   *          Date that the dataset was last accessed
+   *          Date that the dataset was last accessed.
    * @param errorMessages
-   *          List of messages concerning the dataset (errors etc)
+   *          List of error messages concerning the dataset.
+   * @param processingMessages
+   *          List of error messages raised during dataset processing.
+   * @param userMessages
+   *          Messages set by the user for the dataset.
    * @param minLon
-   *          The minimum longitude of the dataset's geographical bounds
+   *          The minimum longitude of the dataset's geographical bounds.
    * @param minLat
-   *          The minimum latitude of the dataset's geographical bounds
+   *          The minimum latitude of the dataset's geographical bounds.
    * @param maxLon
-   *          The maximum longitude of the dataset's geographical bounds
+   *          The maximum longitude of the dataset's geographical bounds.
    * @param maxLat
-   *          The maximum latitude of the dataset's geographical bounds
-   *
+   *          The maximum latitude of the dataset's geographical bounds.
+   * @param exported
+   *          Indicates whether or not the dataset has been exported.
    */
   protected DataSet(long id, Instrument instrument, String name, String start,
     String end, int status, LocalDateTime statusDate, boolean nrt,
@@ -421,10 +460,10 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   /**
-   * Constructor for a new, empty data set
+   * Constructor for a new, empty data set.
    *
    * @param instrument
-   *          The instrument to which the data set belongs
+   *          The instrument to which the data set belongs.
    */
   public DataSet(Instrument instrument) {
     this.instrument = instrument;
@@ -441,15 +480,15 @@ public class DataSet implements Comparable<DataSet> {
    * Basic constructor for new dataset with only start and end dates.
    *
    * @param instrument
-   *          The instrument to which the data set belongs
+   *          The instrument to which the data set belongs.
    * @param name
-   *          Dataset name
+   *          Dataset name.
    * @param start
-   *          Start date
+   *          Start coordinate.
    * @param end
-   *          End date
+   *          End coordinate.
    * @param nrt
-   *          Indicates whether or not this is a NRT dataset
+   *          Indicates whether or not this is a NRT dataset.
    */
   public DataSet(Instrument instrument, String name, String start, String end,
     boolean nrt) {
@@ -467,6 +506,18 @@ public class DataSet implements Comparable<DataSet> {
     this.exported = false;
   }
 
+  /**
+   * Copy the dataset's instrument properties into the DataSet.
+   *
+   * <p>
+   * Since some instrument properties can change over time, we record them with
+   * each DataSet to keep a record of the properties as they were at the
+   * DataSet's creation.
+   * </p>
+   *
+   * @param instrument
+   *          The {@link Instrument} that the DataSet belongs to.
+   */
   private void loadProperties(Instrument instrument) {
 
     // Copy in the properties from the instrument definition
@@ -480,9 +531,9 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   /**
-   * Get the data set's status
+   * Get the data set's status.
    *
-   * @return The status
+   * @return The status.
    */
   public int getStatus() {
     return status;
@@ -608,12 +659,14 @@ public class DataSet implements Comparable<DataSet> {
   }
 
   /**
-   * Get the end point of the data set
+   * Get the end point of the data set.
    *
    * <p>
    * This is an internal format and may not be suitable for display to humans.
    * Use {@link #getDisplayEnd()} for that.
    * </p>
+   *
+   * @return The end point of the dataset.
    */
   public String getEnd() {
     return end;
@@ -709,10 +762,30 @@ public class DataSet implements Comparable<DataSet> {
     return result;
   }
 
+  /**
+   * Set a property for a variable.
+   *
+   * @param variable
+   *          The Variable.
+   * @param key
+   *          The property key.
+   * @param value
+   *          The property value.
+   */
   public void setProperty(Variable variable, String key, String value) {
     setProperty(variable.getName(), key, value);
   }
 
+  /**
+   * Set a property for a variable.
+   *
+   * @param variableName
+   *          The Variable name.
+   * @param key
+   *          The property key.
+   * @param value
+   *          The property value.
+   */
   private void setProperty(String variableName, String key, String value) {
     if (null == properties) {
       properties = new HashMap<String, Properties>();
@@ -758,23 +831,46 @@ public class DataSet implements Comparable<DataSet> {
     return (getStatus() >= STATUS_USER_QC); // || isNrt());
   }
 
+  /**
+   * Add an error message to the dataset.
+   *
+   * @param message
+   *          The message.
+   * @param details
+   *          The message details.
+   */
   public void addMessage(String message, String details) {
     errorMessages.add(new Message(message, details));
   }
 
-  public List<Message> getMessages() {
+  /**
+   * Get the error messages recorded for this dataset.
+   *
+   * @return The error messages.
+   */
+  public List<Message> getErrorMessages() {
     return errorMessages;
   }
 
+  /**
+   * Get the dataset's error messages as a JSON array.
+   *
+   * @return The errors messages JSON.
+   */
   public String getErrorMessagesAsJSONString() {
     JsonArray json = new JsonArray();
-    for (Message message : getMessages()) {
+    for (Message message : getErrorMessages()) {
       json.add(message.getAsJSON());
     }
     return json.toString();
   }
 
-  public int getMessageCount() {
+  /**
+   * Get the number of error messages recorded for this dataset.
+   *
+   * @return The error message count.
+   */
+  public int getErrorMessageCount() {
     return errorMessages.size();
   }
 
@@ -784,25 +880,6 @@ public class DataSet implements Comparable<DataSet> {
   public void clearMessages() {
     errorMessages.clear();
   }
-
-  /**
-   * Get a list of the raw data files used to construct this DataSet
-   *
-   * @param conn
-   *          A database connection
-   * @return The IDs of the files
-   * @throws MissingParamException
-   *           If any required parameters are missing
-   * @throws DatabaseException
-   *           If a database error occurs
-   */
-
-  /*
-   * public List<Long> getSourceFiles(Connection conn) throws
-   * MissingParamException, DatabaseException { return
-   * DataFileDB.getFilesWithinDates(conn, instrument, startTime, endTime, true);
-   * }
-   */
 
   /**
    * Determine whether or not this is a NRT dataset
@@ -860,14 +937,8 @@ public class DataSet implements Comparable<DataSet> {
   /**
    * Set the dataset's geographical bounds.
    *
-   * @param minLon
-   *          The minimum longitude
-   * @param maxLon
-   *          The maximum longitude
-   * @param minLat
-   *          The minimum latitude
-   * @param maxLat
-   *          The maximum latitude
+   * @param bounds
+   *          The bounds
    */
   public void setBounds(GeoBounds bounds) {
 
@@ -879,6 +950,15 @@ public class DataSet implements Comparable<DataSet> {
     }
   }
 
+  /**
+   * Initialise the geographical bounds for the dataset.
+   *
+   * <p>
+   * If the dataset's source {@link Instrument} has a fixed position, the bounds
+   * are set to that position. Otherwise the bounds are set to 0° longitude and
+   * 0° latitude, and will be adjusted automatically during data extraction.
+   * </p>
+   */
   private void initBounds() {
     if (instrument.fixedPosition()) {
       this.minLon = Double.parseDouble(instrument.getProperty("longitude"));
@@ -911,22 +991,47 @@ public class DataSet implements Comparable<DataSet> {
     return new GeoBounds(minLon, maxLon, minLat, maxLat);
   }
 
+  /**
+   * Get the minimum longitude position for the dataset.
+   *
+   * @return The minimum longitude.
+   */
   public double getMinLon() {
     return minLon;
   }
 
+  /**
+   * Get the maximum longitude position for the dataset.
+   *
+   * @return The maximum longitude.
+   */
   public double getMaxLon() {
     return maxLon;
   }
 
+  /**
+   * Get the minimum latitude position for the dataset.
+   *
+   * @return The minimum latitude.
+   */
   public double getMinLat() {
     return minLat;
   }
 
+  /**
+   * Get the maximum latitude position for the dataset.
+   *
+   * @return The maximum latitude.
+   */
   public double getMaxLat() {
     return maxLat;
   }
 
+  /**
+   * Get the date that this dataset was created.
+   *
+   * @return The creation date.
+   */
   public LocalDateTime getCreatedDate() {
     return createdDate;
   }
@@ -958,6 +1063,11 @@ public class DataSet implements Comparable<DataSet> {
     return true;
   }
 
+  /**
+   * Get all properties for the dataset.
+   *
+   * @return The dataset properties.
+   */
   public Map<String, Properties> getAllProperties() {
     return properties;
   }
@@ -983,6 +1093,11 @@ public class DataSet implements Comparable<DataSet> {
     return null != getProperty(INSTRUMENT_PROPERTIES_KEY, "depth");
   }
 
+  /**
+   * Get the sensor offsets defined for the dataset.
+   *
+   * @return The sensor offsets.
+   */
   public SensorOffsets getSensorOffsets() {
     return sensorOffsets;
   }
@@ -997,47 +1112,134 @@ public class DataSet implements Comparable<DataSet> {
     }
   }
 
+  /**
+   * Perform the operation required to establish the result of
+   * {@link #compareTo(DataSet)}.
+   *
+   * <p>
+   * The result of {@link #compareTo(DataSet)} calls depends on the measurement
+   * basis of the dataset's {@link Instrument}.
+   * </p>
+   *
+   * @param o
+   *          The object to be compared.
+   * @return A negative integer, zero, or a positive integer as this object is
+   *         less than, equal to, or greater than the specified object.
+   *
+   * @see Instrument#getBasis()
+   * @see Comparable#compareTo(Object)
+   */
   protected int compareToWorker(DataSet o) {
     return new NaturalOrderComparator().compare(this.start, o.start);
   }
 
+  /**
+   * Add a message to the dataset.
+   *
+   * @param module
+   *          The module where the message was generated.
+   * @param message
+   *          The message.
+   */
   public void addProcessingMessage(String module, String message) {
     processingMessages.addMessage(module, message);
   }
 
+  /**
+   * Add a message to the dataset created from an error encountered during data
+   * extraction.
+   *
+   * @param module
+   *          The module where the message was created.
+   * @param file
+   *          The data file associated with the message.
+   * @param line
+   *          The line number of the data file where the message was generated.
+   * @param e
+   *          The error encountered.
+   */
   public void addProcessingMessage(String module, DataFile file, int line,
     Throwable e) {
     processingMessages.addMessage(module, file, line, e);
   }
 
+  /**
+   * Add a message to the dataset associated with a line in a data file.
+   *
+   * @param module
+   *          The module where the message was created.
+   * @param file
+   *          The data file associated with the message.
+   * @param line
+   *          The line number of the data file where the message was generated.
+   * @param message
+   *          The message.
+   */
   public void addProcessingMessage(String module, DataFile file, int line,
     String message) {
     processingMessages.addMessage(module, file, line, message);
   }
 
+  /**
+   * Get the processing messages for the dataset.
+   *
+   * @return The processing messages.
+   */
   public DatasetProcessingMessages getProcessingMessages() {
     return processingMessages;
   }
 
+  /**
+   * Get the messages added to the dataset by the user.
+   *
+   * @return The user messages.
+   */
   public DatasetUserMessages getUserMessages() {
     return userMessages;
   }
 
+  /**
+   * Store the user-generated messages for the dataet.
+   *
+   * @param messages
+   *          The user messages.
+   */
   public void setUserMessages(String messages) {
     userMessages = DatasetUserMessages.fromString(messages);
   }
 
+  /**
+   * Determine whether or not there are any processing messages for the dataset.
+   *
+   * @return {@code true} if there are processing messages; {@code false} if
+   *         not.
+   */
   public boolean hasProcessingMessages() {
     return processingMessages.getMessageCount() > 0;
   }
 
+  /**
+   * Set the QuinCe version that was used to process this dataset.
+   *
+   * <p>
+   * Automatically records the current QuinCe version.
+   * </p>
+   */
   public void setProcessingVersion() {
     setProperty(DATASET_PROPERTIES_KEY, PROCESSING_VERSION_PROPERTY,
       ResourceManager.getInstance().getConfig().getProperty("version"));
   }
 
+  /**
+   * Get the QuinCe version that was used to process this dataset.
+   *
+   * <p>
+   * If no version is set, defaults to the current version.
+   * </p>
+   *
+   * @return The QuinCe version.
+   */
   public String getProcessingVersion() {
-
     String result = getProperty(DATASET_PROPERTIES_KEY,
       PROCESSING_VERSION_PROPERTY);
 
@@ -1067,6 +1269,21 @@ public class DataSet implements Comparable<DataSet> {
     exported = true;
   }
 
+  /**
+   * Get a Constructor for the DataSet class corresponding to the specified
+   * {@link Instrument} basis.
+   *
+   * @param basis
+   *          The instrument basis.
+   * @return The matching DataSet Constructor.
+   * @throws InvalidInstrumentBasisException
+   *           If the specified instrument basis is invalid.
+   * @throws NoSuchMethodException
+   *           If a suitable Constructor does not exist.
+   * @throws SecurityException
+   *           If the Constructor cannot be accessed.
+   * @see Instrument#getBasis()
+   */
   public static Constructor<? extends DataSet> getDataSetConstructor(int basis)
     throws InvalidInstrumentBasisException, NoSuchMethodException,
     SecurityException {
