@@ -11,10 +11,6 @@ import calendar
 from datetime import datetime
 import re
 
-def current_year():
-    return datetime.now().strftime('%Y')
-
-
 parser = argparse.ArgumentParser(
                     prog='seabird_julian_day_add_year.py',
                     description='Adds a year column to a Seabird TSG which contains Julian days in the time column')
