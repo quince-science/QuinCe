@@ -58,7 +58,7 @@ public class ArgoExportBean extends ExportBean {
 
       // Filename
       ec.setResponseHeader("Content-Disposition", "attachment; filename=\""
-        + dataset.getInstrument().getName() + ".csv\"");
+        + dataset.getInstrument().getName() + "_quince.csv\"");
 
       OutputStream outputStream = ec.getResponseOutputStream();
       outputStream.write(export.getContent());
