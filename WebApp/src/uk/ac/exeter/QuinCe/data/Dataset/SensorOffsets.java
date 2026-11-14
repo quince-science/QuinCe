@@ -216,6 +216,8 @@ public class SensorOffsets {
         resultTime = source.getTime().minus(totalOffset);
       }
 
+      // Truncate the result time to the second
+      resultTime = resultTime.truncatedTo(ChronoUnit.SECONDS);
     }
 
     return noOffset ? source

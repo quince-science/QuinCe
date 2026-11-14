@@ -1,7 +1,6 @@
 package uk.ac.exeter.QuinCe.web.datasets.export;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -203,10 +202,10 @@ public class ExportData {
      *
      * Row IDs are the database IDs of the Coordinate objects in the dataset.
      *
-     * If !measurementsOnly, this will be all the Coordinates of all used
-     * SensorValues.
+     * If !measurementsOnly, this will be all the Coordinates of all
+     * Measurements and used SensorValues.
      *
-     * If measurementsOnly, we only want the Coordinates of actual Measurements.
+     * If measurementsOnly, we only want the Coordinates of actual Measurements
      *
      * Finally, this approach can pull in rows that we don't want to export,
      * e.g. the supporting sensor values for a Measurement will include
@@ -214,13 +213,10 @@ public class ExportData {
      * them. To remove these, we discard any acquired Coordinates that were not
      * in the original sourceData.
      */
-
-    Collection<Coordinate> selectedCoordinates;
-
-    if (exportOption.measurementsOnly()) {
-      selectedCoordinates = measurements.keySet();
-    } else {
-      selectedCoordinates = sensorValues.getCoordinates();
+    HashSet<Coordinate> selectedCoordinates = new HashSet<Coordinate>();
+    selectedCoordinates.addAll(measurements.keySet());
+    if (!exportOption.measurementsOnly()) {
+      selectedCoordinates.addAll(sensorValues.getCoordinates());
     }
 
     HashSet<Long> sourceRowIDs = new HashSet<Long>(sourceData.getRowIDs());
@@ -235,9 +231,7 @@ public class ExportData {
      * a column entry for all diagnostic sensors, even if there's no associated
      * data.
      */
-    if (exportOption.includeRawSensors())
-
-    {
+    if (exportOption.includeRawSensors()) {
       sourceData.getInstrument().getSensorAssignments().getDiagnosticColumnIds()
         .forEach(id -> sensorValues.addOptionalColumn(id));
     }
@@ -307,7 +301,6 @@ public class ExportData {
 
     headingsWithProperties.put(ManualQCData.MEASUREMENTVALUES_FIELD_GROUP,
       new ArrayList<PlotPageColumnHeading>(measurementValuesHeadings));
-
   }
 
   public LinkedHashMap<String, List<PlotPageColumnHeading>> getColumnHeadings() {
