@@ -252,17 +252,11 @@ public class Measurement implements Comparable<Measurement> {
 
   /*
    * We will only need to compare measurements from the same dataset. Therefore
-   * we can get away with just comparing the times.
+   * we can get away with just comparing the coordinates.
    */
   @Override
   public int compareTo(Measurement o) {
-    int result = 0;
-
-    if (o.id != id) {
-      result = coordinate.compareTo(o.coordinate);
-    }
-
-    return result;
+    return coordinate.compareTo(o.coordinate);
   }
 
   public void setMeasurementValue(MeasurementValue measurementValue) {

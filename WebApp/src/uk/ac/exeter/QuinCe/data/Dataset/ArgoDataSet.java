@@ -10,7 +10,7 @@ import uk.ac.exeter.QuinCe.utils.Message;
 
 /**
  * Instance of the {@link DataSet} class for Argo data.
- * 
+ *
  * <p>
  * This class operates identically to the base {@link DataSet} class, except
  * that the {@code start} and {@code end} are defined as Argo cycle numbers
@@ -22,7 +22,7 @@ public class ArgoDataSet extends DataSet {
   /**
    * Creates an empty {@link DataSet} associated with a specified
    * {@link Instrument}.
-   * 
+   *
    * @param instrument
    *          The Instrument.
    */
@@ -92,7 +92,7 @@ public class ArgoDataSet extends DataSet {
 
   /**
    * Get the dataset's start cycle.
-   * 
+   *
    * @return The start cycle.
    */
   public int getStartCycle() {
@@ -101,7 +101,7 @@ public class ArgoDataSet extends DataSet {
 
   /**
    * Get the dataset's end cycle.
-   * 
+   *
    * @return The end cycle.
    */
   public int getEndCycle() {
