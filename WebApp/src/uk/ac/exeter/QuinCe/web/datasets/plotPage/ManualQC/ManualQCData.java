@@ -219,9 +219,22 @@ public class ManualQCData extends PlotPageData {
         dataset);
       progress.setValue(100F);
 
-      // Build the row IDs
+      /*
+       * Build the coordinates collection and row IDs.
+       * Coordinates are from both SensorValues and Measurements, and are ordered
+       * Row IDs are the database IDs of the Coordinates
+       */
+      
+      // Collect all Coordinates in order
+      TreeSet<Coordinate> orderedCoordinates = new TreeSet<Coordinate>();
+      orderedCoordinates.addAll(sensorValues.getCoordinates());
+      measurements.values().forEach(m -> orderedCoordinates.add(m.getCoordinate()));
+
+      // Lookup of Row ID to Coordinate object
       coordinates = new LinkedHashMap<Long, Coordinate>();
-      sensorValues.getCoordinates().forEach(v -> coordinates.put(v.getId(), v));
+      orderedCoordinates.forEach(c -> coordinates.put(c.getId(), c));
+
+      // Extract the list of row IDs
       rowIDs = new ArrayList<Long>(coordinates.keySet());
     }
   }
@@ -432,30 +445,30 @@ public class ManualQCData extends PlotPageData {
       length);
 
     try {
-      List<Coordinate> coordinates = sensorValues.getCoordinates();
+      List<Coordinate> tableCoordinates = new ArrayList<Coordinate>(coordinates.values());
 
       // Make sure we don't fall off the end of the dataset
       int lastRecord = start + length;
-      if (lastRecord > coordinates.size()) {
-        lastRecord = coordinates.size();
+      if (lastRecord > tableCoordinates.size()) {
+        lastRecord = tableCoordinates.size();
       }
 
       for (int i = start; i < lastRecord; i++) {
-        PlotPageTableRecord record = new PlotPageTableRecord(coordinates.get(i),
+        PlotPageTableRecord record = new PlotPageTableRecord(tableCoordinates.get(i),
           sensorValues.getFlagScheme());
 
         // Get the closest measurement
         Measurement concurrentMeasurement = getConcurrentMeasurement(
-          coordinates.get(i));
+          tableCoordinates.get(i));
 
-        record.addCoordinate(coordinates.get(i));
+        record.addCoordinate(tableCoordinates.get(i));
 
         Map<Long, SensorValue> recordSensorValues = sensorValues
-          .get(coordinates.get(i));
+          .get(tableCoordinates.get(i));
 
         if (!dataset.fixedPosition()) {
 
-          DataLatLng position = getMapPosition(coordinates.get(i));
+          DataLatLng position = getMapPosition(tableCoordinates.get(i));
 
           if (null != position) {
             StringBuilder positionString = new StringBuilder();
@@ -477,7 +490,7 @@ public class ManualQCData extends PlotPageData {
         }
 
         if (!dataset.fixedDepth()) {
-          record.addColumn(getInterpolatedDepthValue(coordinates.get(i)));
+          record.addColumn(getInterpolatedDepthValue(tableCoordinates.get(i)));
         }
 
         for (long columnId : sensorColumnIds) {
@@ -511,7 +524,7 @@ public class ManualQCData extends PlotPageData {
         addDiagnosticColumns(record, recordSensorValues);
 
         Long measurementId = null;
-        Measurement measurement = measurements.get(coordinates.get(i));
+        Measurement measurement = measurements.get(tableCoordinates.get(i));
         if (null != measurement) {
           measurementId = measurement.getId();
         }
@@ -853,7 +866,7 @@ public class ManualQCData extends PlotPageData {
 
   @Override
   public List<Coordinate> getCoordinates() {
-    return sensorValues.getCoordinates();
+    return new ArrayList<Coordinate>(coordinates.values());
   }
 
   public Coordinate getCoordinate(long rowId) {
