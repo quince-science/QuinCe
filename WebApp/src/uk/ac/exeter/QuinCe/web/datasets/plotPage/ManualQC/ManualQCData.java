@@ -224,7 +224,7 @@ public class ManualQCData extends PlotPageData {
        * Coordinates are from both SensorValues and Measurements, and are ordered
        * Row IDs are the database IDs of the Coordinates
        */
-      
+
       // Collect all Coordinates in order
       TreeSet<Coordinate> orderedCoordinates = new TreeSet<Coordinate>();
       orderedCoordinates.addAll(sensorValues.getCoordinates());

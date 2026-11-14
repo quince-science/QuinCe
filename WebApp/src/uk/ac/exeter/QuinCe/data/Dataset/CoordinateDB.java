@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,6 +50,11 @@ public class CoordinateDB {
     + "id, dataset_id, date, depth, station, cast, bottle, replicate, "
     + "cycle_number, nprof, direction, nlevel, pres, source_file "
     + "FROM coordinates WHERE id IN " + DatabaseUtils.IN_PARAMS_TOKEN;
+
+  private static final String GET_DATASET_COORDINATES_QUERY = "SELECT "
+    + "id, dataset_id, date, depth, station, cast, bottle, replicate, "
+    + "cycle_number, nprof, direction, nlevel, pres, source_file "
+    + "FROM coordinates WHERE dataset_id = ? ORDER BY date";
 
   /**
    * Store the provided {@link Coordinate} in the database.
@@ -329,6 +335,30 @@ public class CoordinateDB {
     } catch (SQLException e) {
       throw new DatabaseException("Error retrieving coordinates", e);
     }
+  }
+
+  public static List<Coordinate> getDatasetCoordinates(Connection conn,
+    DataSet dataset) throws DatabaseException {
+
+    try (PreparedStatement stmt = conn
+      .prepareStatement(GET_DATASET_COORDINATES_QUERY)) {
+
+      List<Coordinate> result = new ArrayList<Coordinate>();
+
+      stmt.setLong(1, dataset.getId());
+
+      try (ResultSet records = stmt.executeQuery()) {
+        while (records.next()) {
+          result.add(
+            coordinateFromRecord(records, dataset.getInstrument().getBasis()));
+        }
+      }
+
+      return result;
+    } catch (Exception e) {
+      throw new DatabaseException("Error retrieving coordinates", e);
+    }
+
   }
 
   /**
