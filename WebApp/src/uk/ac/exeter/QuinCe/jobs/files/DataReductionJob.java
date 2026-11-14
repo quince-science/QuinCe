@@ -1,14 +1,19 @@
 package uk.ac.exeter.QuinCe.jobs.files;
 
 import java.sql.Connection;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 import uk.ac.exeter.QuinCe.User.User;
+import uk.ac.exeter.QuinCe.data.Dataset.Coordinate;
+import uk.ac.exeter.QuinCe.data.Dataset.CoordinateDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSet;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDB;
 import uk.ac.exeter.QuinCe.data.Dataset.DataSetDataDB;
@@ -116,6 +121,12 @@ public class DataReductionJob extends DataSetJob {
       DatasetMeasurements allMeasurements = DataSetDataDB
         .getMeasurementsByRunType(conn, dataSet);
 
+      /*
+       * Load all existing Coordinates for the dataset
+       */
+      List<Coordinate> coordinates = CoordinateDB.getDatasetCoordinates(conn,
+        dataSet);
+
       CalibrationSet calculationCoefficients = CalculationCoefficientDB
         .getInstance().getCalibrationSet(conn, dataSet);
 
@@ -201,10 +212,18 @@ public class DataReductionJob extends DataSetJob {
           SensorType coreSensorType = usedVariable.getCoreSensorType();
           SensorAssignment coreAssignment = instrument.getSensorAssignments()
             .get(coreSensorType).first();
+
           TimeCoordinate offsetMeasurementTime = dataSet.getSensorOffsets()
             .offsetToFirstGroup((TimeCoordinate) measurement.getCoordinate(),
               coreAssignment, allSensorValues);
-          measurement.setCoordinate(offsetMeasurementTime);
+
+          // See if we already have a Coordinate for the offset time
+          TimeCoordinate matchedTime = getByTime(coordinates,
+            offsetMeasurementTime.getTime());
+
+          measurement.setCoordinate(
+            null != matchedTime ? matchedTime : offsetMeasurementTime);
+
           DataSetDataDB.updateMeasurementCoordinate(conn, measurement);
         }
       }
@@ -316,5 +335,14 @@ public class DataReductionJob extends DataSetJob {
     } catch (Exception e) {
       throw new JobFailedException(id, "Error while resetting dataset", e);
     }
+  }
+
+  private static TimeCoordinate getByTime(List<Coordinate> coordinates,
+    LocalDateTime time) {
+
+    TimeCoordinate dummy = new TimeCoordinate(time);
+    int foundIndex = Collections.binarySearch(coordinates, dummy);
+    return foundIndex >= 0 ? (TimeCoordinate) coordinates.get(foundIndex)
+      : null;
   }
 }

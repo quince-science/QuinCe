@@ -207,5 +207,4 @@ public class TimeCoordinate extends Coordinate {
     throws ColumnHeadingNotFoundException {
     throw new ColumnHeadingNotFoundException(columnHeading);
   }
-
 }
