@@ -193,7 +193,7 @@ public class DataReductionJob extends DataSetJob {
          * offset to the first sensor group, since this is the point of first
          * acquisition of data relevant to the measurement and therefore closest
          * to the real time for the measurement. We can use any of the
-         * insturment's variables for this purpose.
+         * instrument's variables for this purpose.
          */
         if (instrument.getBasis() == Instrument.BASIS_TIME
           && null != usedVariable) {
