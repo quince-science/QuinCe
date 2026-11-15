@@ -1,9 +1,10 @@
 import argparse
-import re
-import mysql.connector
-from tqdm import tqdm
-import json
 from bisect import bisect_left
+import json
+import mysql.connector
+from quince_setup import QuinceSetup
+import sys
+from tqdm import tqdm
 
 '''
 Script to delete unused NaN values from the database. As of version 13.0.6
@@ -65,7 +66,12 @@ def get_datasets(conn, unused_nans):
     datasets = []
 
     cursor = conn.cursor()
-    cursor.execute(f"SELECT DISTINCT dataset_id FROM sensor_values WHERE id IN ({','.join([str(x) for x in unused_nans])}) ORDER BY dataset_id")
+    cursor.execute(f"""
+        SELECT DISTINCT c.dataset_id FROM coordinates c
+        INNER JOIN sensor_values sv ON c.id = sv.coordinate_id
+        WHERE sv.id IN ({','.join([str(x) for x in unused_nans])}) ORDER BY c.dataset_id
+    """)
+
     for (ds_id) in cursor:
         datasets.append(ds_id[0])
 
@@ -94,6 +100,10 @@ def main(conn):
     print(f'Total NaN values: {len(nans)}')
     print(f'Unused NaN values: {len(unused_nans)}')
 
+    if (len(unused_nans) == 0):
+        print('No unused NaNs found')
+        sys.exit()
+
     print('Identifying affected datasets...')
     print(get_datasets(conn, unused_nans))
 
@@ -107,19 +117,13 @@ def main(conn):
 # Command line processor
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Remove unused NULL sensor values from the database")
-    parser.add_argument("quince_setup_file", help="Location of quince.properties file")
+    parser.add_argument("quince_setup_file", help="Location of quince.setup file")
 
     args = parser.parse_args()
 
-    with open(args.quince_setup_file, 'r') as r:
-        props = r.read()
+    quince_setup = QuinceSetup(args.quince_setup_file)
+    host, port, db, user, password = quince_setup.get_db_info()
 
-    db_host = get_prop(props, 'db_host')
-    db_port = get_prop(props, 'db_port')
-    db_name = get_prop(props, 'db_database')
-    db_user = get_prop(props, 'db_username')
-    db_password = get_prop(props, 'db_password')
-
-    with mysql.connector.connect(user=db_user, password=db_password, host=db_host, database=db_name) as db_conn:
+    with mysql.connector.connect(user=user, password=password, host=host, database=db) as db_conn:
         main(db_conn)
 
