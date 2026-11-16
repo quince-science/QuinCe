@@ -42,7 +42,7 @@ def main(conn):
         print('No orphaned coordinates found')
         sys.exit()
     
-    print(f'Found {counts['count'].sum()} orphaned coordinates in {len(counts.index)} datasets')
+    print(f'Found {counts["count"].sum()} orphaned coordinates in {len(counts.index)} datasets')
     print(counts)
 
     do_delete = input('Delete orphaned coordinates? ')
@@ -51,9 +51,9 @@ def main(conn):
 
 
 # Command line processor
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Remove unused NULL sensor values from the database")
-    parser.add_argument("quince_setup_file", help="Location of quince.setup file")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Remove unused NULL sensor values from the database')
+    parser.add_argument('quince_setup_file', help='Location of quince.setup file')
 
     args = parser.parse_args()
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     try:
         engine = sqlalchemy.create_engine(
-            f'mariadb+mariadbconnector://{user}:{password}@{host}:{port}/{db}'
+            f'mysql+pymysql://{user}:{password}@{host}:{port}/{db}'
         )
 
         main(engine)

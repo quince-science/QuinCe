@@ -1,8 +1,13 @@
+greenlet==3.5.6
 mysql-connector-python==26.10.0
-numpy==2.5.4
-pandas==3.1.1
-python-dateutil==4.0.0
-SQLAlchemy==2.1.8
+numpy==2.2.6
+packaging==26.3
+pandas==2.3.3
+PyMySQL==1.2.4
+python-dateutil==3.0.0
+pytz==2026.6
+six==1.17.0
+SQLAlchemy==2.0.57
 tqdm==4.70.1
 typing_extensions==4.16.0
 tzdata==2026.6
