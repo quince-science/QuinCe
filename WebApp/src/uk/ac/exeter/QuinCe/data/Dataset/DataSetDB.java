@@ -984,6 +984,7 @@ public class DataSetDB {
       dataset.getInstrumentId());
 
     JsonObject result = new JsonObject();
+    result.addProperty("id", dataset.getId());
     result.addProperty("name", dataset.getName());
 
     if (dataset.getInstrument().getBasis() == Instrument.BASIS_TIME) {
