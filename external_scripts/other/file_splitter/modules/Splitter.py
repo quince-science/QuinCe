@@ -85,7 +85,7 @@ class Splitter:
             key_config = self._config[key]
 
             fields = line.split(key_config['separator'])
-            if fields[key_config['id_field']] == key_config['id_value']:
+            if fields[key_config['id_field']] in key_config['id_value']:
                 matched_key = key
                 break
 
